@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>在线视频弹幕播放器</title>
+  <title>视频弹幕播放器（xmflv + huaqi 弹幕）</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
   <style>
     body { background:#111; color:#eee; font-family:Arial; padding:20px; }
@@ -15,7 +15,7 @@
 </head>
 <body>
 <div class="container">
-  <h2>在线视频弹幕播放器</h2>
+  <h2>视频弹幕播放器（虾米解析 + 华栖弹幕）</h2>
 
   <input id="urlInput" placeholder="输入视频链接，例如：https://www.bilibili.com/video/BV1xxxxxx">
   <button onclick="parse()">解析</button>
@@ -41,7 +41,7 @@ async function parse() {
   status.textContent = "正在解析，请稍候…";
 
   try {
-    // 视频解析：虾米解析
+    // ⭐ 视频解析：虾米解析
     const videoApi = `https://jx.xmflv.com/?url=${encodeURIComponent(url)}`;
     const videoResp = await fetch(videoApi);
     const videoData = await videoResp.json();
@@ -51,8 +51,8 @@ async function parse() {
       return;
     }
 
-    // 弹幕解析：稳定弹幕接口
-    const danmakuApi = `https://danmu-api-demo.vercel.app/api/v2/comment?url=${encodeURIComponent(url)}&format=json`;
+    // ⭐ 弹幕解析：华栖弹幕
+    const danmakuApi = `https://danmu.huaqi.pro/?url=${encodeURIComponent(url)}&format=json`;
     const danmakuResp = await fetch(danmakuApi);
     const danmakuData = await danmakuResp.json();
 
