@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>在线视频弹幕播放器</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
+  <style>
+    body { background:#111; color:#eee; font-family:Arial; padding:20px; }
+    .container { max-width:900px; margin:auto; }
+    input { width:75%; padding:10px; border-radius:6px; background:#222; color:#eee; border:none; }
+    button { padding:10px 20px; margin-left:10px; background:#3b82f6; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    #status { margin:10px 0; color:#aaa; }
+    #dplayer { margin-top:20px; height:500px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>在线视频弹幕播放器</h2>
+
+  <input id="urlInput" placeholder="输入视频链接，例如：https://www.bilibili.com/video/BV1xxxxxx">
+  <button onclick="parse()">解析</button>
+
+  <div id="status">请输入视频链接并点击解析。</div>
+
+  <div id="dplayer"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
+<script>
+let dp = null;
+
+async function parse() {
+  const url = document.getElementById('urlInput').value.trim();
+  const status = document.getElementById('status');
+
+  if (!url) {
+    status.textContent = "请先输入视频链接";
+    return;
+  }
+
+  status.textContent = "正在解析，请稍候…";
+
+  try {
+    // 视频解析：虾米解析
+    const videoApi = `https://jx.xmflv.com/?url=${encodeURIComponent(url)}`;
+    const videoResp = await fetch(videoApi);
+    const videoData = await videoResp.json();
+
+    if (!videoData.url) {
+      status.textContent = "解析失败：未获取到视频地址";
+      return;
+    }
+
+    // 弹幕解析：稳定弹幕接口
+    const danmakuApi = `https://danmu-api-demo.vercel.app/api/v2/comment?url=${encodeURIComponent(url)}&format=json`;
+    const danmakuResp = await fetch(danmakuApi);
+    const danmakuData = await danmakuResp.json();
+
+    if (dp) dp.destroy();
+
+    dp = new DPlayer({
+      container: document.getElementById('dplayer'),
+      video: {
+        url: videoData.url,
+        type: 'auto'
+      },
+      danmaku: {
+        id: videoData.title || "demo",
+        api: "",
+        data: danmakuData.map(d => ({
+          text: d.text,
+          time: d.time,
+          color: d.color || 16777215,
+          type: "right"
+        }))
+      }
+    });
+
+    status.textContent = `解析成功：${videoData.title || "无标题"}（弹幕：${danmakuData.length} 条）`;
+
+  } catch (err) {
+    status.textContent = "解析失败：" + err.message;
+  }
+}
+</script>
+</body>
+</html>
